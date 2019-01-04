@@ -20,13 +20,14 @@ def read_data():
         ret.append(data)
     ret = np.array(ret)
     ret = ret / 255
-    ret[:, :, :, 0] *= ret[:, :, :, 3]
+    ret[:, :, :, 0] += 1.0 - ret[:, :, :, 3]
 
-    ret[:, :, :, 1] *= ret[:, :, :, 3]
+    ret[:, :, :, 1] += 1.0 - ret[:, :, :, 3]
 
-    ret[:, :, :, 2] *= ret[:, :, :, 3]
+    ret[:, :, :, 2] += 1.0 - ret[:, :, :, 3]
 
     ret = ret[:, :, :, 0:3]
+    ret = np.clip(ret, 0., 1.)
     print('Images data shape', ret.shape)
     return ret
 
