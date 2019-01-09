@@ -1,18 +1,18 @@
 # coding: utf-8
-
 from tensorflow.keras.layers import Input, Dense, Reshape, Flatten, LeakyReLU, BatchNormalization
 from tensorflow.keras.layers import UpSampling2D, Conv2D, Dropout
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adadelta
 import numpy as np
 import os
 import time
 import util.pokemon_data as pokemon_data
 train_images = pokemon_data.read_data()
+train_images = train_images*2.0 - 1.0
 print('start')
 batch_size = 128
-epochs = 5000
-step = 1000
+epochs = 100
+step = 5000
 input_dim = 128
 
 
@@ -23,19 +23,23 @@ def build_generator():
         BatchNormalization(),
         Reshape((10, 10, 3)),
         UpSampling2D(),
-        Conv2D(64, (5, 5), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(32, (3, 3), padding='same', activation=LeakyReLU(0.2)),
         BatchNormalization(),
         UpSampling2D(),
-        Conv2D(3, (5, 5), padding='same', activation='sigmoid')
+        Conv2D(64, (3, 3), padding='same', activation=LeakyReLU(0.2)),
+        BatchNormalization(),
+        Conv2D(3, (5, 5), padding='same', activation='tanh')
     ])
     return model
 
 
 def build_discriminator():
     model = Sequential([
-        Conv2D(64, (5, 5), strides=(2, 2), input_shape=(40, 40, 3), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(32, (3, 3), strides=(2, 2), input_shape=(40, 40, 3), padding='same', activation=LeakyReLU(0.2)),
         Dropout(0.3),
-        Conv2D(128, (5, 5), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(64, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
+        Dropout(0.3),
+        Conv2D(128, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
         Dropout(0.3),
         Flatten(),
         Dense(1, activation='sigmoid')
@@ -46,7 +50,7 @@ base_generator = build_generator()
 base_discriminator = build_discriminator()
 
 # before train
-optimizer = Adam()
+optimizer = Adadelta()
 
 # discriminator
 discriminator = Model(inputs=base_discriminator.inputs, outputs=base_discriminator.outputs)
@@ -65,8 +69,19 @@ combine = Model(z, validity)
 combine.compile(loss='binary_crossentropy', optimizer=optimizer)
 combine.summary()
 
+if os.path.exists('Dweight.h5'):
+    print('preload weight')
+    discriminator.load_weights('Dweight.h5')
+    generator.load_weights('Gweight.h5')
+    combine.load_weights('GANweight.h5')
+
 valid = np.ones((batch_size, 1))
 fake = np.zeros((batch_size, 1))
+
+
+r = 5
+c = 5
+noise_sample = np.random.normal(0, 1, (r * c, input_dim))
 
 # start train
 for i in range(epochs):
@@ -95,8 +110,8 @@ for i in range(epochs):
     r = 5
     c = 5
     samples = []
-    noise = np.random.normal(0, 1, (r * c, input_dim))
-    gen_imgs = generator.predict(noise)
+    gen_imgs = generator.predict(noise_sample)
+    gen_imgs = (gen_imgs + 1.0) * 0.5
     pokemon_data.sample_image(gen_imgs, r, c, "GAN_%d" % i)
     end = time.time()
     print('use time:', end - beg)
@@ -105,3 +120,4 @@ for i in range(epochs):
     combine.save_weights('output/weights/GANweight_%d.h5'%i)
     generator.save_weights('output/weights/Gweight_%d.h5'%i)
     discriminator.save_weights('output/weights/Dweight_%d.h5'%i)
+# 112000
