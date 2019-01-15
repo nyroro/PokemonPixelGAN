@@ -13,7 +13,7 @@ print('start')
 batch_size = 128
 epochs = 100
 step = 5000
-input_dim = 128
+input_dim = 32
 
 
 # build model
@@ -23,23 +23,23 @@ def build_generator():
         BatchNormalization(),
         Reshape((10, 10, 3)),
         UpSampling2D(),
-        Conv2D(32, (3, 3), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(32, (4, 4), padding='same', activation=LeakyReLU(0.2)),
         BatchNormalization(),
         UpSampling2D(),
-        Conv2D(64, (3, 3), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(64, (4, 4), padding='same', activation=LeakyReLU(0.2)),
         BatchNormalization(),
-        Conv2D(3, (5, 5), padding='same', activation='tanh')
+        Conv2D(3, (4, 4), padding='same', activation='tanh')
     ])
     return model
 
 
 def build_discriminator():
     model = Sequential([
-        Conv2D(32, (3, 3), strides=(2, 2), input_shape=(40, 40, 3), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(32, (4, 4), strides=(2, 2), input_shape=(40, 40, 3), padding='same', activation=LeakyReLU(0.2)),
         Dropout(0.3),
-        Conv2D(64, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(64, (4, 4), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
         Dropout(0.3),
-        Conv2D(128, (3, 3), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
+        Conv2D(128, (4, 4), strides=(2, 2), padding='same', activation=LeakyReLU(0.2)),
         Dropout(0.3),
         Flatten(),
         Dense(1, activation='sigmoid')
