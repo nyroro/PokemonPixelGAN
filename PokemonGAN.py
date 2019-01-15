@@ -61,7 +61,7 @@ discriminator.summary()
 generator = Model(inputs=base_generator.inputs, outputs=base_generator.outputs)
 frozon_D = Model(inputs=base_discriminator.inputs, outputs=base_discriminator.outputs)
 frozon_D.trainable = False
-z = Input(shape=(batch_size,))
+z = Input(shape=(input_dim,))
 img = generator(z)
 validity = frozon_D(img)
 
