@@ -11,8 +11,8 @@ train_images = pokemon_data.read_data()
 train_images = train_images*2.0 - 1.0
 print('start')
 batch_size = 128
-epochs = 100
-step = 5000
+epochs = 50000
+step = 10
 input_dim = 32
 
 

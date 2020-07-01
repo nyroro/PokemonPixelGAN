@@ -1,7 +1,7 @@
 # coding: utf-8
 import os
 from .img_slice import crop_all_img
-from scipy import misc
+import imageio
 import numpy as np
 import matplotlib.pyplot as plt
 IMG_PATH = 'pokemon'
@@ -16,7 +16,7 @@ def read_data():
 
     for file in os.listdir(IMG_PATH):
         filepath = os.path.join(IMG_PATH, file)
-        data = misc.imread(filepath)
+        data = imageio.imread(filepath)
         ret.append(data)
     ret = np.array(ret)
     ret = ret / 255
